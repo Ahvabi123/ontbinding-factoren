@@ -1,5 +1,4 @@
-
-          import streamlit as st
+import streamlit as st
 from sympy import symbols, factor, expand
 from sympy.parsing.sympy_parser import (
     parse_expr, standard_transformations,
