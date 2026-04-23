@@ -8,8 +8,9 @@ from sympy.parsing.sympy_parser import (
 
 st.title("🧮 Algebra Solver with Steps")
 
-st.write("Enter an equation like: x^2 + 5x + 6 = 0")
+st.write("Type something like: x^2 + 5x + 6 = 0")
 
+# Allow 5x instead of 5*x
 transformations = standard_transformations + (implicit_multiplication_application,)
 
 x = sp.symbols('x')
@@ -18,8 +19,19 @@ equation_input = st.text_input("Enter equation:")
 
 if st.button("Solve"):
     try:
-        equation_input = equation_input.replace("^", "**")
-        left, right = equation_input.split("=")
+        if equation_input.strip() == "":
+            st.warning("⚠️ Please enter an equation")
+            st.stop()
+
+        # Replace ^ with **
+        eq = equation_input.replace("^", "**")
+
+        # If no '=' → assume = 0
+        if "=" in eq:
+            left, right = eq.split("=")
+        else:
+            left = eq
+            right = "0"
 
         left_expr = parse_expr(left, transformations=transformations)
         right_expr = parse_expr(right, transformations=transformations)
@@ -28,34 +40,37 @@ if st.button("Solve"):
 
         st.subheader("📘 Steps")
 
-        # Step 1: Original equation
+        # 1. Original
         st.write("1. Original equation:")
         st.latex(f"{sp.latex(left_expr)} = {sp.latex(right_expr)}")
 
-        # Step 2: Move everything to one side
+        # 2. Move to one side
         st.write("2. Move everything to one side:")
         st.latex(f"{sp.latex(expr)} = 0")
 
-        # Step 3: Show expanded form (important!)
+        # 3. Expanded (your important part)
         expanded = sp.expand(expr)
-        st.write("3. Expanded form:")
+        st.write("3. Expression (expanded):")
         st.latex(sp.latex(expanded))
 
-        # Step 4: Factor
+        # 4. Factor
         factored = sp.factor(expr)
-        st.write("4. Factor (ontbinding):")
+        st.write("4. Factor (ontbinding factoren):")
         st.latex(f"{sp.latex(expanded)} = {sp.latex(factored)}")
 
-        # Step 5: Solve
+        # 5. Solve
         solutions = sp.solve(expr, x)
 
-        st.write("5. Solve each factor:")
-        for sol in solutions:
-            st.latex(f"x = {sp.latex(sol)}")
+        if solutions:
+            st.write("5. Solutions:")
+            for sol in solutions:
+                st.latex(f"x = {sp.latex(sol)}")
 
-        result_text = " or ".join([f"x = {sol}" for sol in solutions])
-        st.success(f"Final Answer: {result_text}")
+            result_text = " or ".join([f"x = {sol}" for sol in solutions])
+            st.success(f"Final Answer: {result_text}")
+        else:
+            st.warning("No solutions found")
 
-    except Exception:
-        st.error("❌ Invalid equation. Try: x^2 + 5x + 6 = 0")
-
+    except Exception as e:
+        st.error("❌ Something went wrong")
+        st.code(str(e))
