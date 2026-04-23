@@ -1,35 +1,40 @@
+
 import streamlit as st
-from sympy import symbols, factor
-from sympy.parsing.sympy_parser import (
-    parse_expr, standard_transformations,
-    implicit_multiplication_application
-)
+import sympy as sp
 
-st.title("Kwadratische vergelijkingen (met uitleg)")
+st.title("🧮 Algebra Solver")
 
-x = symbols('x')
-transformations = standard_transformations + (implicit_multiplication_application,)
+st.write("Enter an equation like: x^2 + 5*x + 6 = 0")
 
-expr_input = st.text_input("Voer een vergelijking in (bijv. x^2 + 5x + 6):")
+# Define variable
+x = sp.symbols('x')
 
-if expr_input:
+# Input field
+equation_input = st.text_input("Enter equation:")
+
+if st.button("Solve"):
     try:
-        expr_input = expr_input.replace("^", "**")
-        expr = parse_expr(expr_input, transformations=transformations)
+        # Replace ^ with ** for Python
+        equation_input = equation_input.replace("^", "**")
 
-        st.subheader("📥 Origineel")
-        st.write(expr)
+        # Split left and right side
+        left, right = equation_input.split("=")
 
-        factored = factor(expr)
+        # Convert to sympy expressions
+        left_expr = sp.sympify(left)
+        right_expr = sp.sympify(right)
 
-        st.subheader("📤 Ontbinding")
-        st.write(factored)
+        # Move everything to one side
+        equation = sp.Eq(left_expr, right_expr)
 
-        # Simple explanation
-        st.subheader("📌 Uitleg (idee)")
-        st.write("We zoeken twee getallen die:")
-        st.write("- Vermenigvuldigen tot de laatste term")
-        st.write("- Optellen tot de middelste term")
+        # Solve
+        solutions = sp.solve(equation, x)
 
-    except Exception:
-        st.error("❌ Ongeldige invoer")
+        if solutions:
+            result_text = " or ".join([f"x = {sol}" for sol in solutions])
+            st.success(result_text)
+        else:
+            st.warning("No solution found")
+
+    except Exception as e:
+        st.error("❌ Invalid equation. Try something like: x^2 + 5*x + 6 = 0")
